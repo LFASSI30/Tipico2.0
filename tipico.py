@@ -21,7 +21,7 @@ with io.capture_output() as captured:
     subprocess.run(["apt", "install", "ffmpeg", "-y"], check=True)
 
 # 4️⃣ Transcrire avec Whisper en affichage temps réel
-print("Transcription en cours, merci de ne pas fermer cette page...\n")
+print("Transcription en cours, merci de ne pas fermer cette paaaage...\n")
 get_ipython().system(f'whisper "{audio_file}" --model large')
 
 # 5️⃣ Préparer le nom du fichier texte généré
