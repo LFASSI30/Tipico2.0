@@ -1,37 +1,31 @@
-import subprocess
-import sys
+# tipico.py
+
 from google.colab import files
-import whisper
 import os
+import subprocess
 
-# ---- Installer les dépendances ----
-def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", package])
-
-install("cohere")
-install("git+https://github.com/openai/whisper.git")
-install("setuptools-rust")
-
-# Installer ffmpeg
-subprocess.check_call(["apt", "update", "-qq"])
-subprocess.check_call(["apt", "install", "-y", "ffmpeg"])
-
-# ---- Téléversement du fichier ----
+# 1️⃣ Téléverser le fichier audio
 uploaded = files.upload()
 audio_file = list(uploaded.keys())[0]
-print(f"Fichier téléversé : {audio_file}")
 
-# ---- Transcription ----
-model = whisper.load_model("medium")
-print("Transcription en cours, merci de ne pas fermer la page...")
-result = model.transcribe(audio_file)
+# 2️⃣ Écrire le fichier sur le disque
+with open(audio_file, "wb") as f:
+    f.write(uploaded[audio_file])
+del uploaded
 
-# ---- Affichage et sauvegarde ----
-print("\n--- Transcription ---\n")
-print(result["text"])
+# 3️⃣ Installer Whisper et ffmpeg via subprocess (sorties masquées)
+import IPython.utils.io as io
+with io.capture_output() as captured:
+    subprocess.run(["pip", "install", "--upgrade", "openai-whisper"], check=True)
+    subprocess.run(["apt", "update", "-y"], check=True)
+    subprocess.run(["apt", "install", "ffmpeg", "-y"], check=True)
 
-txt_file = os.path.splitext(audio_file)[0] + "_transcription.txt"
-with open(txt_file, "w", encoding="utf-8") as f:
-    f.write(result["text"])
+# 4️⃣ Transcrire avec le modèle large (affichage en direct)
+print("Transcription en cours, merci de ne pas fermer cette page...\n")
+subprocess.run(["whisper", audio_file, "--model", "large"], check=True)
 
-print(f"\nTranscription sauvegardée dans : {txt_file}")
+# 5️⃣ Préparer le nom du fichier texte généré
+txt_file = os.path.splitext(audio_file)[0] + ".txt"
+
+# 6️⃣ Télécharger automatiquement le fichier texte
+files.download(txt_file)
